@@ -6,6 +6,54 @@ Yet another Zend Framework 2 asset manager.
 If you are looking for a really simple and flexible asset manager for your application 
 this could be it; but probably you are looking for another project.
 
+Requirements
+------------
+
+* [Zend Framework 2](https://github.com/zendframework/zf2) (latest master)
+
+Installation
+------------
+
+### Main Setup
+
+#### With composer
+
+1. Add this project in your composer.json:
+
+    ```json
+    "require": {
+        "shadowfax/zf2-asset-manager": "dev-master"
+    }
+    ```
+
+2. Now tell composer to download ThemeManager by running the command:
+
+    ```bash
+    $ php composer.phar update
+    ```
+
+#### By cloning project
+
+1. Clone this project into your `./vendor/` directory.
+
+### Post installation
+
+1. Enabling it in your `application.config.php`file.
+
+    ```php
+    <?php
+    return array(
+        'modules' => array(
+            'ThemeManager',
+            // ...
+        ),
+        // ...
+    );
+    ```
+
+Usage
+-----
+
 This asset manager was written in order to support my ThemeManager. I just needed something
 simple and flexible enough so I could change the assets on the fly. In my case, if I change
 a theme, the AssetManager should be told to change the assets it is using.
