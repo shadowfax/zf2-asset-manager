@@ -1,0 +1,21 @@
+{
+    "name": "shadowfax/zf2-asset-manager",
+    "type": "library",
+    "description": "Asset Manager for ZF2",
+    "keywords": [
+    	"asset"
+    ],
+    "homepage": "https://github.com/shadowfax/zf2-asset-manager",
+    "license": "GPLv2",
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.2.*"
+    },
+    "autoload": {
+        "psr-0": { "AssetManager\\": "src/" },
+        "classmap": [
+            "./Module.php"
+        ]
+    }
+}
