@@ -49,7 +49,7 @@ class AssetManager implements
     	return $this;
     }
     
-    
+    /*
     public function setRoute($route)
     {
     	$router = $this->services->get('Router');
@@ -73,6 +73,7 @@ class AssetManager implements
                 )
     		)
     	);
-    }	
+    }
+    */	
 	     
 }

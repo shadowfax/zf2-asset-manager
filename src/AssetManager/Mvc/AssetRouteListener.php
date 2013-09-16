@@ -38,7 +38,8 @@ class AssetRouteListener implements ListenerAggregateInterface
      */
     public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onRoute'), $priority);
+    	$this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onPreRoute'), 10000);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'onPostRoute'), -10000);
     }
 
     /**
@@ -55,6 +56,63 @@ class AssetRouteListener implements ListenerAggregateInterface
             }
         }
     }
+
+    /**
+     * Late-binding asset routes.
+     * 
+     * @param MvcEvent $event
+     */
+    public function onPreRoute(MvcEvent $event)
+    {
+    	// Get the router object
+    	$serviceManager = $event->getApplication()->getServiceManager();
+    	$router         = $event->getRouter();
+    	
+    	// Load the route configuration
+    	$config = $serviceManager->get('Config');
+	    $config = isset($config['asset_manager']) && (is_array($config['asset_manager']) || $config['asset_manager'] instanceof ArrayAccess)
+	              ? $config['asset_manager']
+	              : array();
+	    $config = isset($config['routes']) && (is_array($config['routes']) || $config['routes'] instanceof ArrayAccess)
+	              ? $config['routes']
+	              : array();
+	    
+	    // There can be special routes defined:
+	    //    /css
+	    //    /js
+	    //    ...
+	    // This way the asset manager can be hidden
+	    if (!empty($config)) {
+	    	// Rename all routes so I get an easy base route 
+	    	// name called 'asset_manager'
+		    $keys   = array_keys($config);
+		    array_walk($keys, function($n) {
+		    	$n = 'asset_manager/' . $n;
+		    });
+		    $config = array_combine($keys, array_values($config));
+		    
+		    // Add the routes
+    		$router->addRoutes($config);
+	    } else {
+	    	// No routes have been configured!
+	    	// So I need to create my own
+	    	$router->addRoute(
+    			'asset_manager',
+	    		array(
+	    			'type' => 'Zend\Mvc\Router\Http\Literal',
+	                'options' => array(
+	                    'route'    => '/assets',
+	                ),
+	                'may_terminate' => true,
+	                'child_routes' => array(
+	                	'default' => array(
+	                		'type' => 'Wildcard'
+	                	)
+	                )
+	    		)
+	    	);
+	    }
+    }
     
     /**
      * Listen to the "route" event and determine if an asset should be loaded.
@@ -62,7 +120,7 @@ class AssetRouteListener implements ListenerAggregateInterface
      * @param  MvcEvent $e
      * @return Response|null
      */
-    public function onRoute(MvcEvent $e)
+    public function onPostRoute(MvcEvent $e)
     {
         $matches = $e->getRouteMatch();
         if (!$matches instanceof Router\RouteMatch) {

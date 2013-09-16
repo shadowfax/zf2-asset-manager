@@ -11,6 +11,8 @@
  */
 namespace AssetManager;
 
+use Zend\ServiceManager\ServiceLocatorInterface;
+
 use AssetManager\Mvc\AssetRouteListener;
 
 use Zend\ModuleManager\ModuleEvent;
@@ -29,6 +31,8 @@ use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 
+use Zend\Console\Console;
+
 class Module implements 
 	AutoloaderProviderInterface,
 	ServiceProviderInterface, 
@@ -39,25 +43,11 @@ class Module implements
     {
         $eventManager        = $e->getApplication()->getEventManager();
         $serviceManager      = $e->getApplication()->getServiceManager();
-        $assetRouteListener  = new AssetRouteListener();
-        $assetRouteListener->attach($eventManager);
         
-        $assetManager = $serviceManager->get('AssetManager');
-        
-        $config = $serviceManager->get('Config');
-        $config = isset($config['asset_manager']) && (is_array($config['asset_manager']) || $config['asset_manager'] instanceof ArrayAccess)
-                  ? $config['asset_manager']
-                  : array();
-        
-        if (isset($config['route'])) {
-        	$assetManager->setRoute($config['route']);
+        // Listener have only sense when request is via http.
+        if (!Console::isConsole()) {
+        	$eventManager->attach(new AssetRouteListener());
         }
-        
-        if(isset($config['paths'])) {
-        	$assetPathStack = $serviceManager->get('AssetPathStack');
-        	$assetPathStack->addPaths($config['paths']);
-        }
-        
     }
 	
 	
@@ -76,8 +66,8 @@ class Module implements
     {
         return array(
             'factories' => array(
-            	'AssetManager'   => 'AssetManager\Mvc\Service\AssetManagerFactory',
-        		'AssetPathStack' => 'AssetManager\Mvc\Service\AssetPathStackFactory',
+            	'AssetManager'               => 'AssetManager\Mvc\Service\AssetManagerFactory',
+        		'AssetPathStack'             => 'AssetManager\Mvc\Service\AssetPathStackFactory',
             )
         );
     }

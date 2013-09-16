@@ -73,48 +73,93 @@ With this code we are telling the `AssetPathStack` to add a new path to the `ass
 contained in our module. Now the assets inside our module will be accessed through the 
 assets route.
 
-By default the assets route is `/assets/*`, but this can be changed calling the `AssetManager` 
-service. Lets expand the previous example a little:
-
-    public function onBootstrap(MvcEvent $e)
-    {
-        $serviceManager = $e->getApplication()->getServiceManager();
-        $assetManager   = $serviceManager->get('AssetManager');
-        $assetManager->setRoute('/files');
-        $assetPathStack = $serviceManager->get('AssetPathStack');
-        $assetPathStack->addPath( __DIR__ . '/assets');
-    }
-    
-In this example we have changed the route for assets to `/files` instead of `/assets`.
-
-The route name for assets, in case you need to use it, is called `asset_manager`.
-
-In a standalone installation we could create a global configuration file in autoload such 
-as `assetmanager.global.php` or tweak or `module.config.php` file. A sample configuration 
-could be:
+This can also be done through the `module.config.php` file:
 
     return array(
-        'route' => '/assets'.
-        'paths' => array(
-            __DIR__ . '/../assets'
+        // ...
+        'asset_manager' => array(
+            'paths' => array(
+                __DIR__ . '/../assets'
+            )
+        )
+    );
+
+By default the assets route is `/assets`, but this can be changed through the configuration
+files.
+
+    return array(
+        // ...
+        'asset_manager' => array(
+            'routes' => array(
+                'files' => array(
+                    'type' => 'Zend\Mvc\Router\Http\Literal',
+                    'options' => array(
+                        'route'    => '/files',
+                    ),
+                    'may_terminate' => true,
+                    'child_routes' => array(
+                        'default' => array(
+                            'type' => 'Wildcard'
+                        )
+                    )
+                )
+            ),
         )
     );
     
-This sample is a `module.config.php` where we are setting the route and a path for the assets.
+In this example we have changed the route for assets from `assets` to `/files`. We suggest this 
+changes are made in a global configuration file such as `config/autoload/assetmanager.global.php`
+as doing this on a `module.config.php` could bring errors due to route collisions and the
+`AssetManager` does NOT consider modules independantly.
 
-The `route` key is optional as it defaults to `/assets`; however it should only bre present at
-a single point as only one route can be defined for assets.
-
-The `paths` key may be present more than once and each entry will add an additional path to 
-assets.
-
-Imagine the previous configuration is for the `Application` module. We now want the `Album` 
-module to have its own self-contained assets. The configuration for the Album module would be:
+Multiple routes may be created. For example:
 
     return array(
-        'paths' => array(
-            __DIR__ . '/../assets'
+        // ...
+        'asset_manager' => array(
+            'routes' => array(
+                'css' => array(
+                    'type' => 'Zend\Mvc\Router\Http\Literal',
+                    'options' => array(
+                        'route'    => '/css',
+                    ),
+                    'may_terminate' => true,
+                    'child_routes' => array(
+                        'default' => array(
+                            'type' => 'Wildcard'
+                        )
+                    )
+                ),
+                'js' => array(
+                    'type' => 'Zend\Mvc\Router\Http\Literal',
+                    'options' => array(
+                        'route'    => '/js',
+                    ),
+                    'may_terminate' => true,
+                    'child_routes' => array(
+                        'default' => array(
+                            'type' => 'Wildcard'
+                        )
+                    )
+                ),
+                'images' => array(
+                    'type' => 'Zend\Mvc\Router\Http\Literal',
+                    'options' => array(
+                        'route'    => '/images',
+                    ),
+                    'may_terminate' => true,
+                    'child_routes' => array(
+                        'default' => array(
+                            'type' => 'Wildcard'
+                        )
+                    )
+                )
+            ),
         )
     );
-    
-As easy as that.
+
+This allows us to set a transparent configuration of the asset manager.
+
+You don't have to worry about route name collisions as the `AssetManager` will prepend
+`asset_manager` to the route name. In the example above the route name `css` will be converted
+to `asset_manager/css` before it gets added to the router.

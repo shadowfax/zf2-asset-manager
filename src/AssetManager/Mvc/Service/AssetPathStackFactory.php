@@ -23,6 +23,17 @@ class AssetPathStackFactory implements FactoryInterface
 	public function createService(ServiceLocatorInterface $serviceLocator)
 	{
 		$assetPathStack = new AssetPathStack();
+		
+		// Load the paths!
+		$config = $serviceLocator->get('Config');
+	    $config = isset($config['asset_manager']) && (is_array($config['asset_manager']) || $config['asset_manager'] instanceof ArrayAccess)
+	              ? $config['asset_manager']
+	              : array();
+	    $config = isset($config['paths']) && (is_array($config['paths']) || $config['paths'] instanceof ArrayAccess)
+	              ? $config['paths']
+	              : array();
+		
+	    $assetPathStack->setPaths($config);	    
 		return $assetPathStack;
 	}
 }

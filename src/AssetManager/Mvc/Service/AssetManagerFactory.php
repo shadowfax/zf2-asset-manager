@@ -23,7 +23,6 @@ class AssetManagerFactory implements FactoryInterface
 	{
 		$assetManager = new AssetManager();
 		$assetManager->setServiceManager($serviceLocator);
-		$assetManager->setRoute('/assets');
 		return $assetManager;
 	}
 }
